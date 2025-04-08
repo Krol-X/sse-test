@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SSE Test</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>SSE Connection Test</h1>
+    
+    <div class="controls">
+      <button onclick="connectSimple()">Simple SSE</button>
+      <button onclick="connectReconnect()">SSE with Reconnect</button>
+      <button onclick="disconnectAll()">Disconnect All</button>
+    </div>
+    
+    <div class="logs">
+      <h2>Simple SSE Logs</h2>
+      <div id="simple-events" class="event-log"></div>
+      
+      <h2>Reconnect SSE Logs</h2>
+      <div id="reconnect-events" class="event-log"></div>
+    </div>
+  </div>
+  
+  <script>
+    let simpleEventSource = null;
+    let reconnectEventSource = null;
+    
+    function connectSimple() {
+      if (simpleEventSource) {
+        simpleEventSource.close();
+      }
+      
+      simpleEventSource = new EventSource('https://localhost:3000/sse-simple');
+      
+      simpleEventSource.onopen = () => {
+        addEvent('simple-events', 'Connection opened');
+      };
+      
+      simpleEventSource.onmessage = (event) => {
+        addEvent('simple-events', `Data: ${event.data}`);
+      };
+      
+      simpleEventSource.onerror = (error) => {
+        addEvent('simple-events', 'Error occurred');
+        console.error('SSE error:', error);
+      };
+    }
+    
+    function connectReconnect() {
+      if (reconnectEventSource) {
+        reconnectEventSource.close();
+      }
+      
+      reconnectEventSource = new EventSource('https://localhost:3000/sse-reconnect');
+      
+      reconnectEventSource.onopen = () => {
+        addEvent('reconnect-events', 'Connection opened');
+      };
+      
+      reconnectEventSource.onmessage = (event) => {
+        addEvent('reconnect-events', `Data: ${event.data}`);
+      };
+      
+      reconnectEventSource.onerror = (error) => {
+        addEvent('reconnect-events', 'Error occurred');
+        console.error('SSE error:', error);
+        
+        // Автоматическое переподключение
+        setTimeout(() => {
+          addEvent('reconnect-events', 'Reconnecting...');
+          connectReconnect();
+        }, 1000);
+      };
+    }
+    
+    function disconnectAll() {
+      if (simpleEventSource) {
+        simpleEventSource.close();
+        simpleEventSource = null;
+        addEvent('simple-events', 'Connection closed');
+      }
+      
+      if (reconnectEventSource) {
+        reconnectEventSource.close();
+        reconnectEventSource = null;
+        addEvent('reconnect-events', 'Connection closed');
+      }
+    }
+    
+    function addEvent(containerId, text) {
+      const div = document.createElement('div');
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      document.getElementById(containerId).appendChild(div);
+    }
+    
+    // Автоматическое подключение при загрузке
+    window.onload = () => {
+      connectSimple();
+      connectReconnect();
+    };
+  </script>
+</body>
+</html>
