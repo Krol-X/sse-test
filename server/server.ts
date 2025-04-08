@@ -1,7 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import https from 'https';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,12 +16,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 
+// Статические файлы
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Health check
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
-
-// Статические файлы
-app.use(express.static(path.join(__dirname, '../client')));
 
 // Простой SSE endpoint
 app.get('/sse-simple', (req, res) => {
@@ -71,13 +70,13 @@ app.get('/sse-reconnect', (req, res) => {
   });
 });
 
-// HTTPS сервер
-const options = {
-  key: fs.readFileSync(path.join(__dirname, 'ssl/key.pem')),
-  cert: fs.readFileSync(path.join(__dirname, 'ssl/cert.pem'))
-};
+const PORT = process.env.PORT || 10000;
 
-const PORT = process.env.PORT || 3000;
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`Server running on https://localhost:${PORT}`);
+console.log('Starting server...');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Port:', PORT);
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('Static files path:', path.join(__dirname, '../client'));
 });
