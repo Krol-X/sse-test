@@ -3,6 +3,11 @@ import cors from 'cors';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Получаем __dirname эквивалент для ES модулей
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 

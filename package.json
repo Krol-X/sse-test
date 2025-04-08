@@ -1,11 +1,12 @@
 {
   "name": "sse-test",
   "version": "1.0.0",
+  "type": "module",
   "description": "SSE connection test",
   "main": "server/server.ts",
   "scripts": {
-    "start": "ts-node server/server.ts",
-    "dev": "nodemon server/server.ts",
+    "start": "node --loader ts-node/esm server/server.ts",
+    "dev": "nodemon --exec 'node --loader ts-node/esm' server/server.ts",
     "build": "tsc",
     "render-postbuild": "npm run build"
   },
